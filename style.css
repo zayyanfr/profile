@@ -14,21 +14,59 @@ body {
     margin: 0;
     min-height: 100vh;
     /* Ultra-modern SVG grid + dynamic mesh (80% blue, 20% white) */
-    background-color: #0ea5e9;
+    background-color: #f8fafc;
     background-image: 
-        radial-gradient(at 10% 20%, #38bdf8 0px, transparent 50%),
-        radial-gradient(at 80% 10%, #0284c7 0px, transparent 50%),
-        radial-gradient(at 30% 70%, #7dd3fc 0px, transparent 50%),
-        radial-gradient(at 95% 95%, rgba(255, 255, 255, 1) 0px, transparent 40%),
-        radial-gradient(at 15% 75%, rgba(255, 255, 255, 1) 0px, transparent 40%),
-        radial-gradient(at 70% 40%, rgba(255, 255, 255, 1) 0px, transparent 40%),
-        radial-gradient(at 40% 15%, rgba(255, 255, 255, 1) 0px, transparent 40%),
-        radial-gradient(at 55% 85%, rgba(255, 255, 255, 1) 0px, transparent 40%),
-        radial-gradient(at 85% 55%, rgba(255, 255, 255, 1) 0px, transparent 40%),
-        radial-gradient(at 20% 40%, rgba(255, 255, 255, 1) 0px, transparent 40%),
+        radial-gradient(at 10% 20%, rgba(56, 189, 248, 0.15) 0px, transparent 50%),
+        radial-gradient(at 80% 10%, rgba(2, 132, 199, 0.1) 0px, transparent 50%),
+        radial-gradient(at 30% 70%, rgba(125, 211, 252, 0.15) 0px, transparent 50%),
+        radial-gradient(at 90% 90%, rgba(14, 165, 233, 0.1) 0px, transparent 50%),
         url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
     background-attachment: fixed;
     transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+body::before, body::after {
+    content: '';
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(120px);
+    z-index: -2;
+    opacity: 0.4;
+    animation: floatBlob 20s infinite alternate ease-in-out;
+}
+body::before {
+    width: 400px;
+    height: 400px;
+    background: #38bdf8;
+    top: -50px;
+    left: -100px;
+}
+body::after {
+    width: 500px;
+    height: 500px;
+    background: #0284c7;
+    bottom: -100px;
+    right: -100px;
+    animation-delay: -10s;
+}
+body.dark::before { opacity: 0.15; background: #0ea5e9; }
+body.dark::after { opacity: 0.15; background: #0284c7; }
+
+@keyframes floatBlob {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(150px, 100px) scale(1.2); }
+}
+
+#scroll-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 4px;
+    background: linear-gradient(to right, #0284c7, #38bdf8, #bae6fd);
+    width: 0%;
+    z-index: 9999;
+    box-shadow: 0 0 15px #38bdf8, 0 0 5px #38bdf8;
+    transition: width 0.1s ease-out;
 }
 
 /* Justify all paragraphs */
@@ -40,8 +78,16 @@ p {
 /* Navigation */
 .navbar {
     background-color: rgba(255, 255, 255, 0.85) !important;
-    backdrop-filter: blur(12px);
     transition: background-color 0.5s ease, box-shadow 0.5s ease;
+}
+
+.navbar::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: -1;
 }
 
 .navbar-brand {
@@ -100,41 +146,40 @@ p {
 
 /* Sections */
 .content-section {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.5), rgba(224, 242, 254, 0.4));
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    padding: 40px;
-    margin-bottom: 30px;
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.8);
-    box-shadow: 0 10px 30px rgba(2, 132, 199, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 0.5);
-    transform: translateZ(0); /* Prevents backdrop-filter glitches */
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    padding: 80px 0;
+    margin-bottom: 0;
 }
 
-.content-section:hover {
-    transform: translateY(-5px) translateZ(0);
-    box-shadow: 0 20px 40px rgba(2, 132, 199, 0.2), inset 0 0 0 1px rgba(255, 255, 255, 0.8);
-    border-color: rgba(255, 255, 255, 1);
+.section-alt {
+    background-color: rgba(224, 242, 254, 0.6);
+    border-top: 1px dashed rgba(186, 230, 253, 0.8);
+    border-bottom: 1px dashed rgba(186, 230, 253, 0.8);
 }
 
 .section-title {
-    color: #0369a1;
-    font-weight: 700;
-    border-bottom: 3px solid #38bdf8;
-    display: inline-block;
-    padding-bottom: 8px;
-    margin-bottom: 24px;
-    transition: color 0.5s ease;
+    background: linear-gradient(135deg, #0284c7, #0ea5e9);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 800;
+    font-size: 2.5rem;
+    margin-bottom: 30px;
 }
 
 /* Tables */
+.custom-table {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+    border: none;
+}
 .custom-table th {
     background-color: #e0f2fe !important;
     color: #0369a1 !important;
+    border-color: rgba(226, 232, 240, 0.6);
 }
 .custom-table td {
     transition: background-color 0.5s ease, color 0.5s ease;
+    border-color: rgba(226, 232, 240, 0.6);
 }
 
 /* Skills */
@@ -168,13 +213,12 @@ p {
     -webkit-backdrop-filter: blur(24px);
     border: 1px solid rgba(186, 230, 253, 0.8) !important;
     box-shadow: 0 8px 20px rgba(2, 132, 199, 0.08);
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    transform: translateZ(0);
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+    transform-style: preserve-3d;
 }
 
 .project-card:hover {
-    transform: translateY(-8px) translateZ(0);
-    box-shadow: 0 15px 30px rgba(2, 132, 199, 0.2) !important;
+    box-shadow: 0 25px 40px rgba(2, 132, 199, 0.2) !important;
     border-color: #7dd3fc !important;
 }
 
@@ -184,7 +228,8 @@ p {
     border-top-left-radius: 16px;
     border-top-right-radius: 16px;
     border-bottom: 1px solid rgba(186, 230, 253, 0.5);
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: filter 0.4s ease;
+    transform: translateZ(30px); /* Creates 3D pop effect inside the card */
 }
 body.dark .project-card-img {
     border-bottom: 1px solid rgba(51, 65, 85, 0.5);
@@ -193,6 +238,16 @@ body.dark .project-card-img {
 
 .project-card:hover .project-card-img {
     opacity: 1;
+}
+
+.achievement-list .list-group-item {
+    transition: all 0.3s ease;
+    border-radius: 12px;
+    padding: 15px !important;
+}
+.achievement-list .list-group-item:hover {
+    background-color: rgba(241, 245, 249, 0.9) !important;
+    transform: translateX(5px);
 }
 
 /* CTA Section */
@@ -235,15 +290,10 @@ body.dark {
     color: #cbd5e1;
     background-color: #0f172a;
     background-image: 
-        radial-gradient(at 20% 20%, #1e293b 0px, transparent 50%),
-        radial-gradient(at 80% 80%, #020617 0px, transparent 50%),
-        radial-gradient(at 80% 20%, #0ea5e9 0px, transparent 35%),
-        radial-gradient(at 15% 85%, #0ea5e9 0px, transparent 35%),
-        radial-gradient(at 60% 60%, #38bdf8 0px, transparent 35%),
-        radial-gradient(at 30% 45%, #0284c7 0px, transparent 40%),
-        radial-gradient(at 50% 25%, #0ea5e9 0px, transparent 35%),
-        radial-gradient(at 90% 60%, #38bdf8 0px, transparent 35%),
-        radial-gradient(at 10% 40%, #0284c7 0px, transparent 35%),
+        radial-gradient(at 20% 20%, rgba(30, 41, 59, 0.6) 0px, transparent 50%),
+        radial-gradient(at 80% 20%, rgba(14, 165, 233, 0.15) 0px, transparent 50%),
+        radial-gradient(at 30% 45%, rgba(2, 132, 199, 0.15) 0px, transparent 50%),
+        radial-gradient(at 70% 80%, rgba(56, 189, 248, 0.1) 0px, transparent 50%),
         url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
     background-attachment: fixed;
 }
@@ -251,6 +301,19 @@ body.dark {
 body.dark .navbar {
     background-color: rgba(15, 23, 42, 0.85) !important;
     border-bottom: 1px solid #334155;
+}
+
+body.dark .navbar-toggler-icon,
+body.dark .btn-close {
+    filter: invert(1);
+}
+
+body.dark .offcanvas {
+    background-color: #0f172a;
+    color: #cbd5e1;
+}
+body.dark .offcanvas-header {
+    border-bottom: 1px solid #334155 !important;
 }
 
 body.dark .navbar-brand {
@@ -270,19 +333,26 @@ body.dark .hero-section {
 }
 
 body.dark .content-section {
-    background: linear-gradient(135deg, rgba(30, 41, 59, 0.5), rgba(15, 23, 42, 0.4));
-    border-color: rgba(51, 65, 85, 0.8);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+    background: transparent;
+    border: none;
+    box-shadow: none !important;
+}
+
+body.dark .section-alt {
+    background-color: rgba(15, 23, 42, 0.6);
+    border-top: 1px dashed rgba(30, 41, 59, 0.8);
+    border-bottom: 1px dashed rgba(30, 41, 59, 0.8);
 }
 
 body.dark .content-section:hover {
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
-    border-color: rgba(100, 116, 139, 0.8);
+    box-shadow: none !important;
+    border: none;
 }
 
 body.dark .section-title {
-    color: #38bdf8;
-    border-bottom-color: #0284c7;
+    background: linear-gradient(135deg, #38bdf8, #7dd3fc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 body.dark .text-muted, body.dark p, body.dark .card-text {
@@ -296,18 +366,19 @@ body.dark h3, body.dark h5, body.dark h6 {
 body.dark .custom-table {
     color: #cbd5e1;
     border-color: #334155;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
 
 body.dark .custom-table th {
     background-color: #1e293b !important;
     color: #e2e8f0 !important;
-    border-color: #475569;
+    border-color: rgba(51, 65, 85, 0.6);
 }
 
 body.dark .custom-table td {
     background-color: #1e293b !important;
     color: #cbd5e1 !important;
-    border-color: #334155;
+    border-color: rgba(51, 65, 85, 0.6);
 }
 
 body.dark .project-card {
@@ -333,6 +404,10 @@ body.dark .project-card .badge.bg-light {
 
 body.dark .achievement-list .list-group-item {
     color: #cbd5e1;
+}
+
+body.dark .achievement-list .list-group-item:hover {
+    background-color: rgba(30, 41, 59, 0.8) !important;
 }
 
 body.dark .achievement-list h6 {
@@ -367,6 +442,29 @@ body.dark #btnToggle {
 body.dark #btnToggle:hover {
     background-color: #38bdf8;
     color: #0f172a;
+}
+
+/* Dark Mode Modal */
+body.dark .modal-content {
+    background-color: #1e293b;
+}
+body.dark .modal-header {
+    border-bottom-color: #334155 !important;
+}
+body.dark .modal-footer {
+    border-top-color: #334155 !important;
+}
+body.dark .modal-body .text-dark {
+    color: #f8fafc !important;
+}
+body.dark .modal-footer .btn-light {
+    background-color: #334155;
+    color: #cbd5e1;
+    border: none;
+}
+body.dark .modal-footer .btn-light:hover {
+    background-color: #475569;
+    color: #fff;
 }
 
 @media (max-width: 768px) {
