@@ -476,3 +476,44 @@ body.dark .modal-footer .btn-light:hover {
         opacity: 0.3;
     }
 }
+
+/* Project Slider Styles */
+.project-slider-container {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 60px 0; /* padding for scale effect */
+    position: relative;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+    cursor: grab;
+}
+
+.project-slider-container::-webkit-scrollbar {
+    display: none; /* Chrome */
+}
+
+.project-slider-container:active {
+    cursor: grabbing;
+}
+
+.project-slider {
+    display: flex;
+    gap: 30px;
+    width: max-content;
+    align-items: center;
+    will-change: transform;
+}
+
+.project-slide {
+    width: 320px;
+    flex-shrink: 0;
+    transition: transform 0.1s ease-out, opacity 0.1s ease-out;
+    transform-origin: center center;
+}
+
+@media (max-width: 768px) {
+    .project-slide {
+        width: 280px;
+    }
+}

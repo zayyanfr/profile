@@ -85,7 +85,6 @@ if (document.getElementById('typed-text')) {
 }
 
 // PROJECT LINK CONFIRMATION (MODAL UI)
-const projectLinks = document.querySelectorAll('.project-card a');
 const confirmModal = document.getElementById('projectConfirmModal');
 const modalProjectName = document.getElementById('modalProjectName');
 const modalConfirmBtn = document.getElementById('modalConfirmBtn');
@@ -93,8 +92,9 @@ const modalConfirmBtn = document.getElementById('modalConfirmBtn');
 if (confirmModal) {
     const bsModal = new bootstrap.Modal(confirmModal);
     
-    projectLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
+    document.body.addEventListener('click', (e) => {
+        const link = e.target.closest('.project-card a');
+        if (link) {
             e.preventDefault();
             const url = link.getAttribute('href');
             const projectName = link.textContent.trim();
@@ -109,6 +109,167 @@ if (confirmModal) {
             }, { once: true });
             
             bsModal.show();
-        });
+        }
     });
+}
+
+// PROJECT HORIZONTAL SCROLL & SCALE ANIMATION
+const sliderContainer = document.getElementById('projectSliderContainer');
+const slider = document.getElementById('projectSlider');
+
+if (sliderContainer && slider) {
+    let originalSlides = Array.from(document.querySelectorAll('.original-slide'));
+
+    // Clone slides for infinite scroll
+    originalSlides.forEach(slide => {
+        let clone = slide.cloneNode(true);
+        clone.classList.remove('original-slide');
+        slider.appendChild(clone);
+    });
+    originalSlides.forEach(slide => {
+        let clone = slide.cloneNode(true);
+        clone.classList.remove('original-slide');
+        slider.appendChild(clone);
+    });
+
+    const allSlides = Array.from(document.querySelectorAll('.project-slide'));
+
+    function getSetWidth() {
+        if (allSlides.length < originalSlides.length * 2) return 0;
+        return allSlides[originalSlides.length].offsetLeft - allSlides[0].offsetLeft;
+    }
+
+    let autoScrollSpeed = 1; // px per frame
+    let isDragging = false;
+    let isTouching = false;
+    let isPaused = false;
+    let resumeTimeout = null;
+    
+    function resetResumeTimeout() {
+        if (resumeTimeout) clearTimeout(resumeTimeout);
+        resumeTimeout = setTimeout(() => {
+            isPaused = false;
+        }, 5000);
+    }
+    
+    function updateScaling() {
+        const containerCenter = sliderContainer.getBoundingClientRect().left + sliderContainer.clientWidth / 2;
+        
+        allSlides.forEach(slide => {
+            const rect = slide.getBoundingClientRect();
+            const slideCenter = rect.left + rect.width / 2;
+            const distanceFromCenter = Math.abs(containerCenter - slideCenter);
+            
+            const maxDistance = sliderContainer.clientWidth / 2 + rect.width;
+            
+            let scale = 1 - (distanceFromCenter / maxDistance) * 0.3; 
+            if (scale < 0.7) scale = 0.7; 
+            if (scale > 1.05) scale = 1.05; 
+            
+            let opacity = 1 - (distanceFromCenter / maxDistance) * 0.5;
+            if (opacity < 0.4) opacity = 0.4;
+            if (opacity > 1) opacity = 1;
+
+            slide.style.transform = `scale(${scale})`;
+            slide.style.opacity = opacity;
+        });
+    }
+
+    function autoScroll() {
+        if (!isDragging && !isTouching && !isPaused) {
+            sliderContainer.scrollLeft += autoScrollSpeed;
+        }
+        
+        const currentSetWidth = getSetWidth();
+        if (currentSetWidth > 0) {
+            if (sliderContainer.scrollLeft >= currentSetWidth * 2) {
+                sliderContainer.scrollLeft -= currentSetWidth;
+            }
+            else if (sliderContainer.scrollLeft <= 0) {
+                sliderContainer.scrollLeft += currentSetWidth;
+            }
+        }
+        
+        updateScaling();
+        requestAnimationFrame(autoScroll);
+    }
+
+    // Initialize
+    setTimeout(() => {
+        const currentSetWidth = getSetWidth();
+        if(currentSetWidth > 0) {
+           sliderContainer.scrollLeft = currentSetWidth;
+        }
+        updateScaling();
+        autoScroll();
+    }, 100);
+
+    // Mouse Drag
+    let startX, startScrollLeft;
+    let dragWalk = 0;
+
+    sliderContainer.addEventListener('mouseleave', () => {
+        if (isDragging) {
+            isDragging = false;
+            resetResumeTimeout();
+        }
+    });
+
+    sliderContainer.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        isPaused = true;
+        if (resumeTimeout) clearTimeout(resumeTimeout);
+        dragWalk = 0;
+        startX = e.pageX - sliderContainer.offsetLeft;
+        startScrollLeft = sliderContainer.scrollLeft;
+    });
+
+    window.addEventListener('mouseup', () => {
+        if (isDragging) {
+            isDragging = false;
+            resetResumeTimeout();
+        }
+    });
+
+    sliderContainer.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        e.preventDefault();
+        const x = e.pageX - sliderContainer.offsetLeft;
+        const walk = (x - startX) * 1.5; 
+        dragWalk = Math.abs(walk);
+        sliderContainer.scrollLeft = startScrollLeft - walk;
+    });
+    
+    // Prevent click on drag
+    sliderContainer.addEventListener('click', (e) => {
+        if (dragWalk > 5) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    }, true);
+
+    // Touch Mobile (Uses native CSS scroll)
+    sliderContainer.addEventListener('touchstart', () => {
+        isTouching = true;
+        isPaused = true;
+        if (resumeTimeout) clearTimeout(resumeTimeout);
+    }, {passive: true});
+
+    sliderContainer.addEventListener('touchend', () => {
+        isTouching = false;
+        resetResumeTimeout();
+    }, {passive: true});
+
+    // Trackpad swipe / wheel scroll
+    sliderContainer.addEventListener('wheel', (e) => {
+        if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+            isPaused = true;
+            resetResumeTimeout();
+        }
+    }, {passive: true});
+
+    // Re-initialize vanilla-tilt for cloned elements
+    if (typeof VanillaTilt !== 'undefined') {
+        VanillaTilt.init(document.querySelectorAll(".project-card"));
+    }
 }
