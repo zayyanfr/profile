@@ -250,6 +250,57 @@ body.dark .project-card-img {
     transform: translateX(5px);
 }
 
+/* Achievement item & Certificate button */
+.achievement-list .achievement-item {
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(186, 230, 253, 0.6) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    transition: all 0.3s ease;
+}
+
+.achievement-list .achievement-item:hover {
+    background-color: #ffffff !important;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(2, 132, 199, 0.12) !important;
+    border-color: #38bdf8 !important;
+}
+
+.btn-view-cert {
+    background: linear-gradient(135deg, #0ea5e9, #0284c7);
+    color: #ffffff !important;
+    text-decoration: none;
+    border: none;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    padding: 8px 18px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.25);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+}
+
+.btn-view-cert:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(2, 132, 199, 0.4);
+    background: linear-gradient(135deg, #0284c7, #0369a1);
+    color: #ffffff !important;
+}
+
+.btn-view-cert:active {
+    transform: translateY(0);
+}
+
+.cert-img-wrapper {
+    background-color: rgba(0, 0, 0, 0.02);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 /* CTA Section */
 .cta-card {
     background: linear-gradient(135deg, #0c4a6e, #0369a1);
@@ -412,6 +463,35 @@ body.dark .achievement-list .list-group-item:hover {
 
 body.dark .achievement-list h6 {
     color: #e2e8f0;
+}
+
+body.dark .achievement-list .achievement-item {
+    background: rgba(30, 41, 59, 0.6) !important;
+    border: 1px solid rgba(51, 65, 85, 0.8) !important;
+    color: #cbd5e1;
+}
+
+body.dark .achievement-list .achievement-item:hover {
+    background: rgba(30, 41, 59, 0.95) !important;
+    border-color: #38bdf8 !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4) !important;
+}
+
+body.dark .btn-view-cert {
+    background: linear-gradient(135deg, #0284c7, #0369a1);
+    box-shadow: 0 4px 14px rgba(14, 165, 233, 0.25);
+    color: #ffffff !important;
+}
+
+body.dark .btn-view-cert:hover {
+    background: linear-gradient(135deg, #38bdf8, #0284c7);
+    box-shadow: 0 6px 20px rgba(56, 189, 248, 0.4);
+    color: #0f172a !important;
+}
+
+body.dark .cert-img-wrapper {
+    background-color: rgba(15, 23, 42, 0.6);
+    border-color: #334155 !important;
 }
 
 body.dark .cta-card {
