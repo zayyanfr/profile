@@ -23,12 +23,64 @@ btnToggle.addEventListener("click", () => {
 const sections = document.querySelectorAll("header, section, footer");
 const navLinks = document.querySelectorAll(".navbar-nav .nav-link");
 
+function getScrollOffset(targetElement, targetId) {
+    const navbar = document.querySelector('.navbar');
+    const navHeight = navbar ? navbar.offsetHeight : 70;
+    const targetTop = targetElement.getBoundingClientRect().top + window.pageYOffset;
+    const targetHeight = targetElement.offsetHeight;
+    const windowHeight = window.innerHeight;
+
+    if (targetId === '#project') {
+        // Tepat di tengah layar di bawah navbar
+        const availableHeight = windowHeight - navHeight;
+        const offset = Math.max(15, (availableHeight - targetHeight) / 2);
+        return Math.max(0, targetTop - navHeight - offset);
+    }
+    return Math.max(0, targetTop - navHeight - 15);
+}
+
+// SMOOTH SCROLL FOR NAV LINKS (EXACT POSITIONING)
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        const targetId = this.getAttribute('href');
+        if (targetId === '#' || !targetId) return;
+        const targetElement = document.querySelector(targetId);
+        if (targetElement) {
+            e.preventDefault();
+            const targetScroll = getScrollOffset(targetElement, targetId);
+            window.scrollTo({
+                top: targetScroll,
+                behavior: 'smooth'
+            });
+            history.pushState(null, null, targetId);
+        }
+    });
+});
+
+// Auto position if page loaded with #project hash
+window.addEventListener('load', () => {
+    if (window.location.hash === '#project') {
+        const projectSection = document.getElementById('project');
+        if (projectSection) {
+            setTimeout(() => {
+                const targetScroll = getScrollOffset(projectSection, '#project');
+                window.scrollTo({
+                    top: targetScroll,
+                    behavior: 'smooth'
+                });
+            }, 150);
+        }
+    }
+});
+
 window.addEventListener("scroll", () => {
     let current = "";
+    const navbar = document.querySelector('.navbar');
+    const navHeight = navbar ? navbar.offsetHeight : 70;
+
     sections.forEach(section => {
         const sectionTop = section.offsetTop;
-        // We use 30% of window height as the offset to match the 25vh scroll-padding
-        if (window.scrollY >= (sectionTop - window.innerHeight * 0.3)) {
+        if (window.scrollY >= (sectionTop - navHeight - 120)) {
             current = section.getAttribute("id");
         }
     });
@@ -88,30 +140,57 @@ if (document.getElementById('typed-text')) {
 const confirmModal = document.getElementById('projectConfirmModal');
 const modalProjectName = document.getElementById('modalProjectName');
 const modalConfirmBtn = document.getElementById('modalConfirmBtn');
+let bsModal = null;
 
 if (confirmModal) {
-    const bsModal = new bootstrap.Modal(confirmModal);
-    
-    document.body.addEventListener('click', (e) => {
-        const link = e.target.closest('.project-card a');
-        if (link) {
-            e.preventDefault();
-            const url = link.getAttribute('href');
-            const projectName = link.textContent.trim();
-            
-            // Set modal content
-            modalProjectName.textContent = projectName;
-            modalConfirmBtn.setAttribute('href', url);
-            
-            // Handle modal close after clicking "Lanjutkan"
-            modalConfirmBtn.addEventListener('click', () => {
-                bsModal.hide();
-            }, { once: true });
-            
-            bsModal.show();
-        }
-    });
+    bsModal = new bootstrap.Modal(confirmModal);
 }
+
+function openProjectModal(linkElement) {
+    if (!bsModal || !linkElement) return;
+    const url = linkElement.getAttribute('href');
+    const projectName = linkElement.textContent.trim();
+    
+    // Set modal content
+    modalProjectName.textContent = projectName;
+    modalConfirmBtn.setAttribute('href', url);
+    
+    // Handle modal close after clicking "Lanjutkan"
+    modalConfirmBtn.addEventListener('click', () => {
+        bsModal.hide();
+    }, { once: true });
+    
+    bsModal.show();
+}
+
+// Global drag tracker to distinguish clicks from drags/swipes
+let isSliderActionDrag = false;
+
+document.body.addEventListener('click', (e) => {
+    // If a drag/swipe just occurred on the slider, suppress modal opening
+    if (isSliderActionDrag) {
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+    }
+
+    const cardImg = e.target.closest('.project-card-img');
+    const link = e.target.closest('.project-card a');
+
+    if (cardImg) {
+        // Tapping/clicking the image directly
+        const card = cardImg.closest('.project-card');
+        const cardLink = card ? card.querySelector('a') : null;
+        if (cardLink) {
+            e.preventDefault();
+            openProjectModal(cardLink);
+        }
+    } else if (link) {
+        // Clicking the card body or link
+        e.preventDefault();
+        openProjectModal(link);
+    }
+});
 
 // PROJECT HORIZONTAL SCROLL & SCALE ANIMATION
 const sliderContainer = document.getElementById('projectSliderContainer');
@@ -197,76 +276,117 @@ if (sliderContainer && slider) {
     // Initialize
     setTimeout(() => {
         const currentSetWidth = getSetWidth();
-        if(currentSetWidth > 0) {
-           sliderContainer.scrollLeft = currentSetWidth;
+        if (currentSetWidth > 0) {
+            sliderContainer.scrollLeft = currentSetWidth;
         }
         updateScaling();
         autoScroll();
     }, 100);
 
-    // Mouse Drag
-    let startX, startScrollLeft;
+    // Mouse Drag (Strictly initiated on the image area)
+    let startX = 0;
+    let startScrollLeft = 0;
     let dragWalk = 0;
 
-    sliderContainer.addEventListener('mouseleave', () => {
-        if (isDragging) {
-            isDragging = false;
-            resetResumeTimeout();
-        }
-    });
-
     sliderContainer.addEventListener('mousedown', (e) => {
+        const img = e.target.closest('.project-card-img');
+        if (!img || e.button !== 0) return; // Only allow drag starting strictly on image
+
         isDragging = true;
         isPaused = true;
+        isSliderActionDrag = false;
         if (resumeTimeout) clearTimeout(resumeTimeout);
         dragWalk = 0;
-        startX = e.pageX - sliderContainer.offsetLeft;
+        startX = e.pageX;
         startScrollLeft = sliderContainer.scrollLeft;
+        sliderContainer.classList.add('is-dragging');
+        e.preventDefault(); // Prevents native HTML5 image dragging
+    });
+
+    window.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const x = e.pageX;
+        const walk = (x - startX) * 1.3;
+        dragWalk = Math.abs(walk);
+        if (dragWalk > 6) {
+            isSliderActionDrag = true;
+        }
+        sliderContainer.scrollLeft = startScrollLeft - walk;
     });
 
     window.addEventListener('mouseup', () => {
         if (isDragging) {
             isDragging = false;
+            sliderContainer.classList.remove('is-dragging');
             resetResumeTimeout();
+            setTimeout(() => {
+                isSliderActionDrag = false;
+            }, 60);
         }
     });
 
-    sliderContainer.addEventListener('mousemove', (e) => {
-        if (!isDragging) return;
-        e.preventDefault();
-        const x = e.pageX - sliderContainer.offsetLeft;
-        const walk = (x - startX) * 1.5; 
-        dragWalk = Math.abs(walk);
-        sliderContainer.scrollLeft = startScrollLeft - walk;
-    });
-    
-    // Prevent click on drag
-    sliderContainer.addEventListener('click', (e) => {
-        if (dragWalk > 5) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-    }, true);
+    // Touch Mobile (Swipe strictly allowed starting on the image area)
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchStartScrollLeft = 0;
+    let isTouchDragging = false;
+    let isTouchHorizontal = null;
 
-    // Touch Mobile (Uses native CSS scroll)
-    sliderContainer.addEventListener('touchstart', () => {
+    sliderContainer.addEventListener('touchstart', (e) => {
+        const img = e.target.closest('.project-card-img');
+        if (!img) return; // Ignore touches outside image area so normal page scrolling works
+
         isTouching = true;
         isPaused = true;
+        isSliderActionDrag = false;
         if (resumeTimeout) clearTimeout(resumeTimeout);
-    }, {passive: true});
+
+        isTouchDragging = true;
+        isTouchHorizontal = null;
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        touchStartScrollLeft = sliderContainer.scrollLeft;
+    }, { passive: true });
+
+    sliderContainer.addEventListener('touchmove', (e) => {
+        if (!isTouchDragging) return;
+        if (e.cancelable) e.preventDefault(); // Mencegah layar web ikut terswipe
+
+        const currentX = e.touches[0].clientX;
+        const diffX = currentX - touchStartX;
+
+        if (Math.abs(diffX) > 6) {
+            isSliderActionDrag = true;
+        }
+        sliderContainer.scrollLeft = touchStartScrollLeft - diffX;
+    }, { passive: false });
 
     sliderContainer.addEventListener('touchend', () => {
+        if (isTouchDragging) {
+            isTouchDragging = false;
+            isTouching = false;
+            resetResumeTimeout();
+            setTimeout(() => {
+                isSliderActionDrag = false;
+            }, 60);
+        }
+    }, { passive: true });
+
+    sliderContainer.addEventListener('touchcancel', () => {
+        isTouchDragging = false;
         isTouching = false;
         resetResumeTimeout();
-    }, {passive: true});
+    }, { passive: true });
 
-    // Trackpad swipe / wheel scroll
+    // Trackpad swipe / horizontal wheel scroll
     sliderContainer.addEventListener('wheel', (e) => {
         if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+            if (e.cancelable) e.preventDefault(); // Mencegah layar web / history navigation ikut swipe
+            sliderContainer.scrollLeft += e.deltaX;
             isPaused = true;
             resetResumeTimeout();
         }
-    }, {passive: true});
+    }, { passive: false });
 
     // Re-initialize vanilla-tilt for cloned elements
     if (typeof VanillaTilt !== 'undefined') {

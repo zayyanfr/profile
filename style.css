@@ -5,17 +5,20 @@
 
 html {
     scroll-behavior: smooth;
-    scroll-padding-top: 25vh; /* 25% dari tinggi layar, membuat posisi pas di tengah */
+    overflow-x: hidden;
 }
 
 body {
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100vw;
     font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: #262626;
     margin: 0;
     min-height: 100vh;
     /* Ultra-modern SVG grid + dynamic mesh (80% blue, 20% white) */
     background-color: #f8fafc;
-    background-image: 
+    background-image:
         radial-gradient(at 10% 20%, rgba(56, 189, 248, 0.15) 0px, transparent 50%),
         radial-gradient(at 80% 10%, rgba(2, 132, 199, 0.1) 0px, transparent 50%),
         radial-gradient(at 30% 70%, rgba(125, 211, 252, 0.15) 0px, transparent 50%),
@@ -25,7 +28,8 @@ body {
     transition: background-color 0.5s ease, color 0.5s ease;
 }
 
-body::before, body::after {
+body::before,
+body::after {
     content: '';
     position: fixed;
     border-radius: 50%;
@@ -34,6 +38,7 @@ body::before, body::after {
     opacity: 0.4;
     animation: floatBlob 20s infinite alternate ease-in-out;
 }
+
 body::before {
     width: 400px;
     height: 400px;
@@ -41,6 +46,7 @@ body::before {
     top: -50px;
     left: -100px;
 }
+
 body::after {
     width: 500px;
     height: 500px;
@@ -49,12 +55,25 @@ body::after {
     right: -100px;
     animation-delay: -10s;
 }
-body.dark::before { opacity: 0.15; background: #0ea5e9; }
-body.dark::after { opacity: 0.15; background: #0284c7; }
+
+body.dark::before {
+    opacity: 0.15;
+    background: #0ea5e9;
+}
+
+body.dark::after {
+    opacity: 0.15;
+    background: #0284c7;
+}
 
 @keyframes floatBlob {
-    0% { transform: translate(0, 0) scale(1); }
-    100% { transform: translate(150px, 100px) scale(1.2); }
+    0% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    100% {
+        transform: translate(150px, 100px) scale(1.2);
+    }
 }
 
 #scroll-progress {
@@ -100,7 +119,8 @@ p {
     transition: color 0.3s ease;
 }
 
-.nav-link:hover, .nav-link.active {
+.nav-link:hover,
+.nav-link.active {
     color: #0284c7 !important;
     font-weight: 700;
 }
@@ -121,7 +141,7 @@ p {
     left: 0;
     width: 40%;
     height: 100%;
-    background-image: url('profile.png');
+    background-image: url('profile.jpg');
     background-size: cover;
     background-position: center left;
     mask-image: linear-gradient(to right, black 40%, transparent 100%);
@@ -136,7 +156,7 @@ p {
 }
 
 .hero-title {
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .hero-subtitle {
@@ -165,18 +185,28 @@ p {
     margin-bottom: 30px;
 }
 
+#project {
+    padding: 45px 0 55px;
+}
+
+#project .section-title {
+    margin-bottom: 12px;
+}
+
 /* Tables */
 .custom-table {
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
     border: none;
 }
+
 .custom-table th {
     background-color: #e0f2fe !important;
     color: #0369a1 !important;
     border-color: rgba(226, 232, 240, 0.6);
 }
+
 .custom-table td {
     transition: background-color 0.5s ease, color 0.5s ease;
     border-color: rgba(226, 232, 240, 0.6);
@@ -229,8 +259,19 @@ p {
     border-top-right-radius: 16px;
     border-bottom: 1px solid rgba(186, 230, 253, 0.5);
     transition: filter 0.4s ease;
-    transform: translateZ(30px); /* Creates 3D pop effect inside the card */
+    transform: translateZ(30px);
+    /* Creates 3D pop effect inside the card */
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-user-drag: none;
+    touch-action: none;
 }
+
+.project-card-img:active {
+    cursor: grabbing;
+}
+
 body.dark .project-card-img {
     border-bottom: 1px solid rgba(51, 65, 85, 0.5);
     opacity: 0.9;
@@ -245,6 +286,7 @@ body.dark .project-card-img {
     border-radius: 12px;
     padding: 15px !important;
 }
+
 .achievement-list .list-group-item:hover {
     background-color: rgba(241, 245, 249, 0.9) !important;
     transform: translateX(5px);
@@ -326,7 +368,7 @@ body.dark .project-card-img {
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    background-color: rgba(255,255,255,0.1);
+    background-color: rgba(255, 255, 255, 0.1);
     transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
 }
 
@@ -340,7 +382,7 @@ body.dark .project-card-img {
 body.dark {
     color: #cbd5e1;
     background-color: #0f172a;
-    background-image: 
+    background-image:
         radial-gradient(at 20% 20%, rgba(30, 41, 59, 0.6) 0px, transparent 50%),
         radial-gradient(at 80% 20%, rgba(14, 165, 233, 0.15) 0px, transparent 50%),
         radial-gradient(at 30% 45%, rgba(2, 132, 199, 0.15) 0px, transparent 50%),
@@ -363,6 +405,7 @@ body.dark .offcanvas {
     background-color: #0f172a;
     color: #cbd5e1;
 }
+
 body.dark .offcanvas-header {
     border-bottom: 1px solid #334155 !important;
 }
@@ -375,7 +418,8 @@ body.dark .nav-link {
     color: #94a3b8 !important;
 }
 
-body.dark .nav-link:hover, body.dark .nav-link.active {
+body.dark .nav-link:hover,
+body.dark .nav-link.active {
     color: #38bdf8 !important;
 }
 
@@ -406,18 +450,22 @@ body.dark .section-title {
     -webkit-text-fill-color: transparent;
 }
 
-body.dark .text-muted, body.dark p, body.dark .card-text {
+body.dark .text-muted,
+body.dark p,
+body.dark .card-text {
     color: #94a3b8 !important;
 }
 
-body.dark h3, body.dark h5, body.dark h6 {
+body.dark h3,
+body.dark h5,
+body.dark h6 {
     color: #e2e8f0 !important;
 }
 
 body.dark .custom-table {
     color: #cbd5e1;
     border-color: #334155;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 body.dark .custom-table th {
@@ -511,14 +559,17 @@ body.dark .footer {
     color: #0284c7;
     background-color: transparent;
 }
+
 #btnToggle:hover {
     background-color: #0284c7;
     color: white;
 }
+
 body.dark #btnToggle {
     border-color: #38bdf8;
     color: #38bdf8;
 }
+
 body.dark #btnToggle:hover {
     background-color: #38bdf8;
     color: #0f172a;
@@ -528,20 +579,25 @@ body.dark #btnToggle:hover {
 body.dark .modal-content {
     background-color: #1e293b;
 }
+
 body.dark .modal-header {
     border-bottom-color: #334155 !important;
 }
+
 body.dark .modal-footer {
     border-top-color: #334155 !important;
 }
+
 body.dark .modal-body .text-dark {
     color: #f8fafc !important;
 }
+
 body.dark .modal-footer .btn-light {
     background-color: #334155;
     color: #cbd5e1;
     border: none;
 }
+
 body.dark .modal-footer .btn-light:hover {
     background-color: #475569;
     color: #fff;
@@ -560,21 +616,29 @@ body.dark .modal-footer .btn-light:hover {
 /* Project Slider Styles */
 .project-slider-container {
     width: 100%;
-    overflow-x: auto;
+    overflow-x: hidden;
     overflow-y: hidden;
-    padding: 60px 0; /* padding for scale effect */
+    padding: 15px 0 25px;
+    /* compact padding for scale effect and shadows */
     position: relative;
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE and Edge */
-    cursor: grab;
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    cursor: default;
+    touch-action: pan-y;
+    overscroll-behavior: contain;
+    overscroll-behavior-x: contain;
 }
 
 .project-slider-container::-webkit-scrollbar {
-    display: none; /* Chrome */
+    display: none;
+    /* Chrome */
 }
 
-.project-slider-container:active {
-    cursor: grabbing;
+.project-slider-container.is-dragging,
+.project-slider-container.is-dragging .project-card-img {
+    cursor: grabbing !important;
 }
 
 .project-slider {
@@ -593,6 +657,10 @@ body.dark .modal-footer .btn-light:hover {
 }
 
 @media (max-width: 768px) {
+    #project {
+        padding: 35px 0 45px;
+    }
+
     .project-slide {
         width: 280px;
     }
