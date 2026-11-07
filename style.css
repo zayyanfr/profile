@@ -142,7 +142,7 @@ p {
     width: 40%;
     height: 100%;
     background-image: url('profile.jpg');
-    background-size: cover;
+    background-size: 90%;
     background-position: center left;
     mask-image: linear-gradient(to right, black 40%, transparent 100%);
     -webkit-mask-image: linear-gradient(to right, black 40%, transparent 100%);
@@ -261,15 +261,9 @@ p {
     transition: filter 0.4s ease;
     transform: translateZ(30px);
     /* Creates 3D pop effect inside the card */
-    cursor: grab;
     user-select: none;
     -webkit-user-select: none;
     -webkit-user-drag: none;
-    touch-action: none;
-}
-
-.project-card-img:active {
-    cursor: grabbing;
 }
 
 body.dark .project-card-img {
@@ -625,10 +619,10 @@ body.dark .modal-footer .btn-light:hover {
     /* Firefox */
     -ms-overflow-style: none;
     /* IE and Edge */
-    cursor: default;
+    cursor: grab;
     touch-action: pan-y;
-    overscroll-behavior: contain;
-    overscroll-behavior-x: contain;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 .project-slider-container::-webkit-scrollbar {
@@ -637,7 +631,7 @@ body.dark .modal-footer .btn-light:hover {
 }
 
 .project-slider-container.is-dragging,
-.project-slider-container.is-dragging .project-card-img {
+.project-slider-container.is-dragging * {
     cursor: grabbing !important;
 }
 

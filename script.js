@@ -174,21 +174,13 @@ document.body.addEventListener('click', (e) => {
         return;
     }
 
-    const cardImg = e.target.closest('.project-card-img');
-    const link = e.target.closest('.project-card a');
-
-    if (cardImg) {
-        // Tapping/clicking the image directly
-        const card = cardImg.closest('.project-card');
-        const cardLink = card ? card.querySelector('a') : null;
-        if (cardLink) {
+    const card = e.target.closest('.project-card');
+    if (card && card.closest('#projectSliderContainer')) {
+        const link = card.querySelector('a');
+        if (link) {
             e.preventDefault();
-            openProjectModal(cardLink);
+            openProjectModal(link);
         }
-    } else if (link) {
-        // Clicking the card body or link
-        e.preventDefault();
-        openProjectModal(link);
     }
 });
 
@@ -219,16 +211,46 @@ if (sliderContainer && slider) {
     }
 
     let autoScrollSpeed = 1; // px per frame
-    let isDragging = false;
+    let isMouseDragging = false;
     let isTouching = false;
     let isPaused = false;
     let resumeTimeout = null;
+
+    let startX = 0;
+    let startScrollLeft = 0;
+    let dragDistance = 0;
+
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchStartScrollLeft = 0;
+    let isHorizontalSwipe = false;
+    let isDirectionDetermined = false;
+
+    function pauseAutoScroll() {
+        isPaused = true;
+        if (resumeTimeout) clearTimeout(resumeTimeout);
+    }
     
     function resetResumeTimeout() {
         if (resumeTimeout) clearTimeout(resumeTimeout);
         resumeTimeout = setTimeout(() => {
             isPaused = false;
-        }, 5000);
+        }, 5000); // Mulai jalan kembali setelah 5 detik tidak ada swipe
+    }
+
+    function checkInfiniteWrap() {
+        const currentSetWidth = getSetWidth();
+        if (currentSetWidth <= 0) return;
+
+        if (sliderContainer.scrollLeft >= currentSetWidth * 2) {
+            sliderContainer.scrollLeft -= currentSetWidth;
+            startScrollLeft -= currentSetWidth;
+            touchStartScrollLeft -= currentSetWidth;
+        } else if (sliderContainer.scrollLeft <= 10) {
+            sliderContainer.scrollLeft += currentSetWidth;
+            startScrollLeft += currentSetWidth;
+            touchStartScrollLeft += currentSetWidth;
+        }
     }
     
     function updateScaling() {
@@ -255,20 +277,10 @@ if (sliderContainer && slider) {
     }
 
     function autoScroll() {
-        if (!isDragging && !isTouching && !isPaused) {
+        if (!isMouseDragging && !isTouching && !isPaused) {
             sliderContainer.scrollLeft += autoScrollSpeed;
+            checkInfiniteWrap();
         }
-        
-        const currentSetWidth = getSetWidth();
-        if (currentSetWidth > 0) {
-            if (sliderContainer.scrollLeft >= currentSetWidth * 2) {
-                sliderContainer.scrollLeft -= currentSetWidth;
-            }
-            else if (sliderContainer.scrollLeft <= 0) {
-                sliderContainer.scrollLeft += currentSetWidth;
-            }
-        }
-        
         updateScaling();
         requestAnimationFrame(autoScroll);
     }
@@ -283,108 +295,136 @@ if (sliderContainer && slider) {
         autoScroll();
     }, 100);
 
-    // Mouse Drag (Strictly initiated on the image area)
-    let startX = 0;
-    let startScrollLeft = 0;
-    let dragWalk = 0;
-
+    // Mouse Drag (Anywhere on slider)
     sliderContainer.addEventListener('mousedown', (e) => {
-        const img = e.target.closest('.project-card-img');
-        if (!img || e.button !== 0) return; // Only allow drag starting strictly on image
+        if (e.button !== 0) return; // Only main left click
 
-        isDragging = true;
-        isPaused = true;
+        isMouseDragging = true;
         isSliderActionDrag = false;
-        if (resumeTimeout) clearTimeout(resumeTimeout);
-        dragWalk = 0;
+
         startX = e.pageX;
         startScrollLeft = sliderContainer.scrollLeft;
+        dragDistance = 0;
+
         sliderContainer.classList.add('is-dragging');
-        e.preventDefault(); // Prevents native HTML5 image dragging
+        e.preventDefault(); // Prevents native link/image dragging
     });
 
     window.addEventListener('mousemove', (e) => {
-        if (!isDragging) return;
+        if (!isMouseDragging) return;
+
         const x = e.pageX;
         const walk = (x - startX) * 1.3;
-        dragWalk = Math.abs(walk);
-        if (dragWalk > 6) {
+        dragDistance = Math.abs(walk);
+
+        if (dragDistance > 6) {
             isSliderActionDrag = true;
+            pauseAutoScroll(); // Hanya berhenti saat aktif di-drag ke kanan/kiri
         }
+
         sliderContainer.scrollLeft = startScrollLeft - walk;
+        checkInfiniteWrap();
+        updateScaling();
     });
 
     window.addEventListener('mouseup', () => {
-        if (isDragging) {
-            isDragging = false;
+        if (isMouseDragging) {
+            isMouseDragging = false;
             sliderContainer.classList.remove('is-dragging');
-            resetResumeTimeout();
-            setTimeout(() => {
-                isSliderActionDrag = false;
-            }, 60);
+
+            if (isSliderActionDrag) {
+                resetResumeTimeout(); // Berhenti dan mulai jalan lagi setelah 5 detik tidak ada swipe
+                setTimeout(() => {
+                    isSliderActionDrag = false;
+                }, 120);
+            }
         }
     });
 
-    // Touch Mobile (Swipe strictly allowed starting on the image area)
-    let touchStartX = 0;
-    let touchStartY = 0;
-    let touchStartScrollLeft = 0;
-    let isTouchDragging = false;
-    let isTouchHorizontal = null;
-
+    // Touch Mobile (Swipe horizontal vs scroll vertical)
     sliderContainer.addEventListener('touchstart', (e) => {
-        const img = e.target.closest('.project-card-img');
-        if (!img) return; // Ignore touches outside image area so normal page scrolling works
+        if (e.touches.length !== 1) return;
 
         isTouching = true;
-        isPaused = true;
         isSliderActionDrag = false;
-        if (resumeTimeout) clearTimeout(resumeTimeout);
+        isHorizontalSwipe = false;
+        isDirectionDetermined = false;
 
-        isTouchDragging = true;
-        isTouchHorizontal = null;
         touchStartX = e.touches[0].clientX;
         touchStartY = e.touches[0].clientY;
         touchStartScrollLeft = sliderContainer.scrollLeft;
+        dragDistance = 0;
     }, { passive: true });
 
     sliderContainer.addEventListener('touchmove', (e) => {
-        if (!isTouchDragging) return;
-        if (e.cancelable) e.preventDefault(); // Mencegah layar web ikut terswipe
+        if (!isTouching || e.touches.length !== 1) return;
 
         const currentX = e.touches[0].clientX;
+        const currentY = e.touches[0].clientY;
         const diffX = currentX - touchStartX;
+        const diffY = currentY - touchStartY;
 
-        if (Math.abs(diffX) > 6) {
+        if (!isDirectionDetermined) {
+            if (Math.abs(diffX) > 8 || Math.abs(diffY) > 8) {
+                isDirectionDetermined = true;
+                if (Math.abs(diffX) >= Math.abs(diffY)) {
+                    isHorizontalSwipe = true;
+                } else {
+                    isHorizontalSwipe = false;
+                    // User is scrolling the page vertically! Allow normal browser scrolling
+                    return;
+                }
+            } else {
+                return;
+            }
+        }
+
+        // Allow vertical page scroll
+        if (!isHorizontalSwipe) return;
+
+        // Prevent vertical jitter during horizontal swipe
+        if (e.cancelable) e.preventDefault();
+
+        // Berhenti hanya saat aktif di-swipe kanan/kiri
+        pauseAutoScroll();
+
+        dragDistance = Math.abs(diffX);
+        if (dragDistance > 6) {
             isSliderActionDrag = true;
         }
+
         sliderContainer.scrollLeft = touchStartScrollLeft - diffX;
+        checkInfiniteWrap();
+        updateScaling();
     }, { passive: false });
 
-    sliderContainer.addEventListener('touchend', () => {
-        if (isTouchDragging) {
-            isTouchDragging = false;
+    function handleTouchEnd() {
+        if (isTouching) {
             isTouching = false;
-            resetResumeTimeout();
-            setTimeout(() => {
-                isSliderActionDrag = false;
-            }, 60);
-        }
-    }, { passive: true });
 
-    sliderContainer.addEventListener('touchcancel', () => {
-        isTouchDragging = false;
-        isTouching = false;
-        resetResumeTimeout();
-    }, { passive: true });
+            if (isSliderActionDrag || isHorizontalSwipe) {
+                resetResumeTimeout(); // Berhenti dan mulai jalan lagi setelah 5 detik tidak ada swipe
+                setTimeout(() => {
+                    isSliderActionDrag = false;
+                }, 120);
+            }
+        }
+    }
+
+    sliderContainer.addEventListener('touchend', handleTouchEnd, { passive: true });
+    sliderContainer.addEventListener('touchcancel', handleTouchEnd, { passive: true });
 
     // Trackpad swipe / horizontal wheel scroll
     sliderContainer.addEventListener('wheel', (e) => {
-        if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
-            if (e.cancelable) e.preventDefault(); // Mencegah layar web / history navigation ikut swipe
-            sliderContainer.scrollLeft += e.deltaX;
-            isPaused = true;
-            resetResumeTimeout();
+        const isHorizontal = Math.abs(e.deltaX) > Math.abs(e.deltaY) || e.shiftKey;
+        if (isHorizontal) {
+            if (e.cancelable) e.preventDefault();
+            const delta = e.deltaX !== 0 ? e.deltaX : e.deltaY;
+            sliderContainer.scrollLeft += delta;
+            checkInfiniteWrap();
+            updateScaling();
+            pauseAutoScroll();
+            resetResumeTimeout(); // Mulai jalan lagi setelah 5 detik tidak ada swipe
         }
     }, { passive: false });
 
